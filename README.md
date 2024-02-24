@@ -18,10 +18,6 @@ Gufu-hsbot是基于 [AmiyaBot](https://www.amiyabot.com/) 框架的 QQ 聊天机
 
     「成长，生命，幸福，还有朋友」 -- 野性之心•古夫
 
-# 古夫-hsbot-测试中
-
-古夫-hsbot-测试中是一个多功能机器人，主要提供炉石传说相关的查询服务。
-
 
 ## 功能
 
