@@ -284,30 +284,6 @@ async def reqNumLeaderBoard(data: Message):
 
     return Chain(data).image(random_mmc)
 
-    # 收录卡组代码（需要更新）
-    existDeck = ["tsu", "changsha", "huyaYellow", "season", "shubiao"]
-    
-    
-    nameList = ""
-    for name in existDeck:
-        nameList += name + "\n"
-    
-    reply = await data.wait(Chain(data).text(nameList))
-    
-    if reply:
-        if reply.text == "tsu":
-            return Chain(reply).text(f'AAEBAamDBh7AAcsEwxaFF9DBArT8AvyjA/SrA7i2A8W4A+DMA+XRA4XkA53uA673A6CKBOWwBNu5BKneBMreBLztBKOQBZCWBaqYBeDDBf3EBa3tBdD4BdH4Bdj+BQAAAQOEuwL9xAXl0QP9xAXK3gT9xAUAAA== ')
-        if reply.text == "changsha":
-            return Chain(reply).text(f'AAEBAeq3BCjeFMMWvL0C2f4Cg6ED/KMDh60D+7gDk9AD+d4DzOsDi/gD4IsE7p8EyaAE0qQE5bAEsLIE0L0EuNkEwOIEl+8EqO8EjIMFp5MFr5MF4qQFwqUF/cQF9ugFyPgFh/4Fi/4Fjf4F1oAG64AG+JQG0Z4GtKEGnaIGAAABA9cT/cQFoM4C/cQFi/gD/cQFAAA=')
-        if reply.text == "huyaYellow":
-            return Chain(reply).text(f'AAEBAdyqBij4B6UJ+g7DFoUXg7sCtbsC8M8CkNMCpvAC5ogD/KMD184D+9ED9tYD+98D/d8D+OMD1O0D9PEDrYoEl6AEhKMEi6ME5bAEpLYEltQEp+QEl+8Ev/AEhoMF3aQF/cQF5uQFre0Fz/YF+/gFi5UG0Z4GvqIGAAABA6DOAv3EBf7jA/3EBdiBBv3EBQAA')
-        if reply.text == "season":
-            return Chain(reply).text(f'AAEBAZ8FCN0KnvgCjK0Dp8sDk9ADweIEjf4Ftp4GC7jHAtnHAtn+ApXNA8zrA+PrA8egBMmgBP3uBJT1BdeiBgAA')
-        if reply.text == "shubiao":
-            return Chain(reply).text(f'AAEBAQcO+AeT0AOO7QO8igTlsAS42QTw2wSX7wSa7wTipAX9xAWl9gWQ+wXYgQYNz+cCtt4D+YwE+owEiKAEiaAE784EjtQEtPgFtfgFofsFhYIG0Z4GAAEDoM4C/cQFiLED/cQFqIoE/cQFAAA=')
-
-    return Chain(reply).text(f'代码不存在')
-
 
 # @bot.on_message(keywords='代码')
 # async def reqCode(data: Message):
