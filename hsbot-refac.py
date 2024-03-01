@@ -18,7 +18,6 @@ bot_content = json.loads(f.read())
 appid, token = bot_content["appid"], bot_content["token"]
 bot = AmiyaBot(appid=appid, token=token)
 headers = {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'}
-bot.prefix_keywords = ['gufu', '古夫', '/']
 
 region_dict = {
     'US': '美',

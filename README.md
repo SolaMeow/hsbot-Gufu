@@ -75,7 +75,7 @@ python3 hsbot-refac.py
 
 docker build -t hsbot .
 
-docker run -P hsbot
+docker run -dP --restart always hsbot
 
 ```
 
