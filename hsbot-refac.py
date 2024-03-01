@@ -274,39 +274,6 @@ async def reqEURankarena(data: Message):
 @bot.on_message(keywords='查亚服竞技场')
 async def reqAPRankarena(data: Message):
     return await reqRankArena(data, 'AP', 'arena', "查亚服竞技场")
-    target = data.text[data.text.find("查亚服竞技场"):]
-    id = target[6:]
-    
-    html = "https://www.hsguru.com/leaderboard?leaderboardId=arena&region=AP&search=" + id
-    response = requests.get(html, headers=headers)
-    # res = urllib.request.urlopen(req)
-    # ht = res.read().decode('utf-8')
-    # print(ht)
-    response.encoding = 'utf-8'
-    
-    soup = BeautifulSoup(response.content, 'html.parser')
-    # 获取标题
-    title = soup.title.string
-
-    # 获取正文内容
-    body = soup.body
-    
-    ht = body.text.split()
-    start_index = ht.index("Rating", 0, len(ht))
-    
-    res_ht = ht[start_index+1:]
-    res_text = ""
-    
-    for item in res_ht:
-        if not str(item).isalnum():
-            res_ht.remove(item)
-            
-    for i in range(0, len(res_ht)-1, 2):
-        pair = "rank: " + res_ht[i] + ", " + "name: " + res_ht[i+1] + "\n"
-        res_text += pair
-    
-    return Chain(data).text(f'亚服竞技场, \n{res_text}')
-
 
 @bot.on_message(keywords='猫猫虫')
 async def reqNumLeaderBoard(data: Message):
