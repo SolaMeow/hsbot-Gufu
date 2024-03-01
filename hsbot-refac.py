@@ -103,6 +103,8 @@ async def reqRankLev(data: Message, region: str, leaderboardId: str, keyword: st
     body = soup.body
     
     ht = body.text.split()
+    if ht[0] == "Bad":
+        return Chain(data).text(f'hsguru挂了，暂时查不了，有其他问题请反馈Sola')
     start_index = ht.index("Battletag", 0, len(ht))
     
     res_ht = ht[start_index+1:]
@@ -112,6 +114,8 @@ async def reqRankLev(data: Message, region: str, leaderboardId: str, keyword: st
         if not str(item).isalnum():
             res_ht.remove(item)
         if "history" in item:
+            res_ht.remove(item)
+        if "pts" in item:
             res_ht.remove(item)
     
     rank_len = 99
