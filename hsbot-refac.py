@@ -31,6 +31,11 @@ leaderboardId_dict = {
     'arena': '竞技场'
 }
 
+leaderboard_dict = {
+    'wild': '狂野',
+    'standard': '标准'
+}
+
 async def reqRank(data: Message, region: str, leaderboardId: str, keyword: str):
     target = data.text[data.text.find(keyword):]
     id = target[5:]
@@ -93,67 +98,53 @@ async def reqAPRankWLD(data: Message):
 async def reqAPRankSTD(data: Message):
     return await reqRank(data, 'AP', 'STD', "查亚服标准")
 
-async def reqRankLev(data: Message, region: str, leaderboardId: str, keyword: str):
-    html = f"https://www.hsguru.com/leaderboard?leaderboardId={leaderboardId}&region={region}"
-    response = requests.get(html, headers=headers)
-    response.encoding = 'utf-8'
+async def reqRankLev(data: Message, region: str, leaderboardId: str):
+    res = ""
     
-    soup = BeautifulSoup(response.content, 'html.parser')
-    body = soup.body
-    
-    ht = body.text.split()
-    if ht[0] == "Bad":
-        return Chain(data).text(f'hsguru挂了，暂时查不了，有其他问题请反馈Sola')
-    start_index = ht.index("Battletag", 0, len(ht))
-    
-    res_ht = ht[start_index+1:]
-    res_text = ""
-
-    for item in res_ht:
-        if not str(item).isalnum():
-            res_ht.remove(item)
-        if "history" in item:
-            res_ht.remove(item)
-        if "pts" in item:
-            res_ht.remove(item)
-    
-    rank_len = 99
-    count = 0
-    for i in range(0, len(res_ht)-1, 2):
-        count += 1
-        pair = res_ht[i] + ": " + res_ht[i+1] + "\n"
-        res_text += pair
-        if (count > rank_len):
-            break
+    for i in range(1, 5):
+        html = f"https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region={region}&leaderboardId={leaderboardId}&page={i}"
         
-    if (len(res_text) >= 2000) :
-        return Chain(data).text(f'返回长度过长')
+        scraper=cloudscraper.create_scraper(browser={
+                'browser': 'firefox',
+                'platform': 'windows',
+                'mobile': True
+            })
+        
+        info = scraper.get(html)
+        json_dict = json.loads(info.text)
+        
+        rank_name = json_dict["leaderboard"]["rows"]
+        pair = ""
+        for item in rank_name:
+            rank, name = item['rank'], item['accountid']
+            pair += str(rank) + ": " + name + "\n"
+        res += pair
     
-    return Chain(data).text(f'{region_dict[region]}服{leaderboardId_dict[leaderboardId]}月榜, \n{res_text}')
+    return Chain(data).text(f'{region_dict[region]}服{leaderboard_dict[leaderboardId]}月榜, \n{res}')
 
 @bot.on_message(keywords='打印亚服狂野月榜')
 async def reqAPRankeleven(data: Message):
-    return await reqRankLev(data, 'AP', 'WLD', "打印亚服狂野月榜")
+    return await reqRankLev(data, 'AP', 'wild')
 
 @bot.on_message(keywords='打印欧服狂野月榜')
 async def reqEURankeleven(data: Message):
-    return await reqRankLev(data, 'EU', 'WLD', "打印欧服狂野月榜")
+    return await reqRankLev(data, 'EU', 'wild')
 
 @bot.on_message(keywords='打印美服狂野月榜')
 async def reqUSRankeleven(data: Message):
-    return await reqRankLev(data, 'US', 'WLD', "打印美服狂野月榜")
+    return await reqRankLev(data, 'US', 'wild')
 
 @bot.on_message(keywords='打印美服标准月榜')
 async def reqUSRankeleven(data: Message):
-    return await reqRankLev(data, 'US', 'STD', "打印美服标准月榜")
+    return await reqRankLev(data, 'US', 'standard')
 
 @bot.on_message(keywords='打印欧服标准月榜')
 async def reqUSRankeleven(data: Message):
-    return await reqRankLev(data, 'EU', 'STD', "打印欧服标准月榜")
+    return await reqRankLev(data, 'EU', 'standard')
 
 @bot.on_message(keywords='打印亚服标准月榜')
 async def reqUSRankeleven(data: Message):
-    return await reqRankLev(data, 'AP', 'STD', "打印亚服标准月榜")
+    return await reqRankLev(data, 'AP', 'standard')
     
 
 @bot.on_message(keywords='查三服狂野人数')
@@ -526,44 +517,27 @@ async def reqNumLeaderBoard(data: Message):
 
 @bot.on_message(keywords='月榜查询')
 async def reqUSRankeleven(data: Message):
-    html = "https://www.hsguru.com/leaderboard?leaderboardId=WLD&region=US"
-    response = requests.get(html, headers=headers)
-    # res = urllib.request.urlopen(req)
-    # ht = res.read().decode('utf-8')
-    # print(ht)
-    response.encoding = 'utf-8'
+    res = ""
     
-    soup = BeautifulSoup(response.content, 'html.parser')
-    # 获取标题
-    title = soup.title.string
-
-    # 获取正文内容
-    body = soup.body
-    
-    ht = body.text.split()
-    start_index = ht.index("Battletag", 0, len(ht))
-    
-    res_ht = ht[start_index+1:]
-    res_text = ""
-
-    for item in res_ht:
-        if not str(item).isalnum():
-            res_ht.remove(item)
-        if "history" in item:
-            res_ht.remove(item)
-    
-    rank_len = 99
-    count = 0
-    for i in range(0, len(res_ht)-1, 2):
-        count += 1
-        pair = res_ht[i] + ": " + res_ht[i+1] + "\n"
-        res_text += pair
-        if (count > rank_len):
-            break
+    for i in range(1, 5):
+        html = f"https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=wild&page={i}"
         
-    if (len(res_text) >= 2000) :
-        return Chain(data).text(f'返回长度过长')
+        scraper=cloudscraper.create_scraper(browser={
+                'browser': 'firefox',
+                'platform': 'windows',
+                'mobile': True
+            })
+        
+        info = scraper.get(html)
+        json_dict = json.loads(info.text)
+        
+        rank_name = json_dict["leaderboard"]["rows"]
+        pair = ""
+        for item in rank_name:
+            rank, name = item['rank'], item['accountid']
+            pair += str(rank) + ": " + name + "\n"
+        res += pair
     
-    return Chain(data).text(f'快捷查询只能查狂野，其他服务器需要使用教程中的命令, \n{res_text}')
+    return Chain(data).text(f'快捷查询只能查狂野，其他服务器需要使用教程中的命令, \n{res}')
 
 asyncio.run(bot.start())
