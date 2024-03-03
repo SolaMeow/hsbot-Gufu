@@ -68,15 +68,26 @@ python3 hsbot-refac.py
 
 ```
 
-### docker部署 🤗
+### docker本地编译 🤗
 
-推荐使用这种方式进行部署。
 
 ``` shell
 
 docker build -t hsbot .
 
-docker run -dP --restart always -v ./bot.json:/app/bot.json hsbot
+docker run -dP --restart always --name my_hsbot -v ./bot.json:/app/bot.json hsbot
+
+```
+
+### docker镜像部署 😎
+
+推荐使用这种方式进行部署。
+
+``` shell
+
+docker pull mildfol/hsbot:latest
+
+docker run -dP --restart always --name my_hsbot -v ./bot.json:/app/bot.json hsbot
 
 ```
 
