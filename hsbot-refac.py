@@ -10,6 +10,7 @@ import os
 import random
 import collections
 from amiyabot import AmiyaBot, Message, Chain
+import aiohttp
 
 # init the hs bot
 # read the appid and token from local bot.json
@@ -98,27 +99,33 @@ async def reqAPRankWLD(data: Message):
 async def reqAPRankSTD(data: Message):
     return await reqRank(data, 'AP', 'STD', "查亚服标准")
 
-async def reqRankLev(data: Message, region: str, leaderboardId: str):
-    res = ""
-    
-    for i in range(1, 5):
-        html = f"https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region={region}&leaderboardId={leaderboardId}&page={i}"
-        
-        scraper=cloudscraper.create_scraper(browser={
-                'browser': 'firefox',
-                'platform': 'windows',
-                'mobile': True
-            })
-        
-        info = scraper.get(html)
-        json_dict = json.loads(info.text)
-        
+async def fetch_page(session, url):
+    async with session.get(url) as response:
+        info = await response.text()
+        json_dict = json.loads(info)
         rank_name = json_dict["leaderboard"]["rows"]
-        pair = ""
+        page_results = []
         for item in rank_name:
             rank, name = item['rank'], item['accountid']
-            pair += str(rank) + ": " + name + "\n"
-        res += pair
+            page_results.append((rank, name))
+        return page_results
+
+async def reqRankLev(data: Message, region: str, leaderboardId: str):
+    all_results = []
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for i in range(1, 5):
+            html = f"https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region={region}&leaderboardId={leaderboardId}&page={i}"
+            tasks.append(fetch_page(session, html))
+        results = await asyncio.gather(*tasks)
+        for page_results in results:
+            all_results.extend(page_results)
+    
+    # Sort all results by rank
+    all_results.sort(key=lambda x: x[0])
+    
+    # Convert sorted results to string
+    res = "\n".join(f"{rank}: {name}" for rank, name in all_results)
     
     return Chain(data).text(f'{region_dict[region]}服{leaderboard_dict[leaderboardId]}月榜, \n{res}')
 
@@ -146,84 +153,36 @@ async def reqUSRankeleven(data: Message):
 async def reqUSRankeleven(data: Message):
     return await reqRankLev(data, 'AP', 'standard')
     
+async def fetch_num(session, url):
+    async with session.get(url) as response:
+        info = await response.text()
+        json_dict = json.loads(info)
+        return json_dict["leaderboard"]["pagination"]["totalSize"]
 
 @bot.on_message(keywords='查三服狂野人数')
 async def reqNumLeaderBoard(data: Message):
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=wild&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    USWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=wild&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    EUWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=AP&leaderboardId=wild&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    APWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD) 
-
+    urls = [
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=wild&page=1",
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=wild&page=1",
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=AP&leaderboardId=wild&page=1"
+    ]
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_num(session, url) for url in urls]
+        USWILD, EUWILD, APWILD = await asyncio.gather(*tasks)
+    res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD)
     return Chain(data).text(f'三服狂野人数, \n{res_text}')
-
 
 @bot.on_message(keywords='查三服标准人数')
 async def reqNumLeaderBoard(data: Message):
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=standard&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    USWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=standard&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    EUWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=AP&leaderboardId=standard&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    APWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD) 
-
+    urls = [
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=standard&page=1",
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=standard&page=1",
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=AP&leaderboardId=standard&page=1"
+    ]
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_num(session, url) for url in urls]
+        USWILD, EUWILD, APWILD = await asyncio.gather(*tasks)
+    res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD)
     return Chain(data).text(f'三服标准人数, \n{res_text}')
 
 
@@ -476,38 +435,14 @@ def liveReq(res_tag, id, name):
 # 新增审核
 @bot.on_message(keywords='传说人数')
 async def reqNumLeaderBoard(data: Message):
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=wild&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    USWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=wild&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    EUWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
-
-    html = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=AP&leaderboardId=wild&page=1"
-
-    scraper=cloudscraper.create_scraper(browser={
-            'browser': 'firefox',
-            'platform': 'windows',
-            'mobile': True
-        })
-    info = scraper.get(html)
-    json_dict = json.loads(info.text)
-    APWILD = json_dict["leaderboard"]["pagination"]["totalSize"]
+    urls = [
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=wild&page=1",
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=wild&page=1",
+        "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=AP&leaderboardId=wild&page=1"
+    ]
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_num(session, url) for url in urls]
+        USWILD, EUWILD, APWILD = await asyncio.gather(*tasks)
     
     res_text = "快捷查询只能查狂野，标准需要使用教程中的命令。" + "\n"
     res_text += "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD) 
@@ -516,27 +451,22 @@ async def reqNumLeaderBoard(data: Message):
 
 
 @bot.on_message(keywords='月榜查询')
-async def reqUSRankeleven(data: Message):
-    res = ""
+async def reqRankLev(data: Message):
+    all_results = []
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for i in range(1, 5):
+            html = f"https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=wild&page={i}"
+            tasks.append(fetch_page(session, html))
+        results = await asyncio.gather(*tasks)
+        for page_results in results:
+            all_results.extend(page_results)
     
-    for i in range(1, 5):
-        html = f"https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=US&leaderboardId=wild&page={i}"
-        
-        scraper=cloudscraper.create_scraper(browser={
-                'browser': 'firefox',
-                'platform': 'windows',
-                'mobile': True
-            })
-        
-        info = scraper.get(html)
-        json_dict = json.loads(info.text)
-        
-        rank_name = json_dict["leaderboard"]["rows"]
-        pair = ""
-        for item in rank_name:
-            rank, name = item['rank'], item['accountid']
-            pair += str(rank) + ": " + name + "\n"
-        res += pair
+    # Sort all results by rank
+    all_results.sort(key=lambda x: x[0])
+    
+    # Convert sorted results to string
+    res = "\n".join(f"{rank}: {name}" for rank, name in all_results)
     
     return Chain(data).text(f'快捷查询只能查狂野，其他服务器需要使用教程中的命令, \n{res}')
 
