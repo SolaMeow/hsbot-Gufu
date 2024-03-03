@@ -451,7 +451,7 @@ async def reqNumLeaderBoard(data: Message):
 
 
 @bot.on_message(keywords='月榜查询')
-async def reqRankLev(data: Message):
+async def reqRankEleven(data: Message):
     all_results = []
     async with aiohttp.ClientSession() as session:
         tasks = []

@@ -1,6 +1,7 @@
 <!-- projectInfo  -->
 <div align="center">
-    <img alt="hsbot" src="./fig/gufu.png" width=280 height=230/>
+    <img alt="hsbot" src="./fig/gufu.png" width=280 height=230/
+    >
 
 # 古夫Gufu-hsbot
 
@@ -75,7 +76,7 @@ python3 hsbot-refac.py
 
 docker build -t hsbot .
 
-docker run -dP --restart always hsbot
+docker run -dP --restart always -v ./bot.json:/app/bot.json hsbot
 
 ```
 
@@ -102,7 +103,7 @@ docker run -dP --restart always hsbot
 
 ### 下版本V3待补充功能
 
-- [ ] 镜像上传至docker hub。
+- [x] 镜像上传至docker hub。
 - [ ] 修复问题功能Hsreplay高胜职业/卡组信息。
 - [ ] 修复问题功能卡组代码转卡组图片预览。
 - [ ] 可能的新增功能。

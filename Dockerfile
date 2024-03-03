@@ -5,7 +5,8 @@ FROM continuumio/miniconda3
 WORKDIR /app
 
 # 将当前目录的内容复制到工作目录中
-COPY . /app
+COPY environment.yml /app/environment.yml
+COPY hsbot-refac.py /app/hsbot-refac.py
 
 # 使用conda安装Python 3.7
 RUN conda install python=3.8
