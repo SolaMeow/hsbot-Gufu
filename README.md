@@ -75,7 +75,7 @@ python3 hsbot-refac.py
 
 docker build -t hsbot .
 
-docker run -dP --restart always --name my_hsbot -v ./bot.json:/app/bot.json hsbot
+docker run -dP --restart always --name my_hsbot -v ./bot.json:/app/bot.json -v ./capoo_origin_gif:/app/capoo_origin_gif hsbot
 
 ```
 
@@ -87,7 +87,7 @@ docker run -dP --restart always --name my_hsbot -v ./bot.json:/app/bot.json hsbo
 
 docker pull mildfol/hsbot:latest
 
-docker run -dP --restart always --name my_hsbot -v ./bot.json:/app/bot.json hsbot
+docker run -dP --restart always --name my_hsbot -v ./bot.json:/app/bot.json -v ./capoo_origin_gif:/app/capoo_origin_gif hsbot
 
 ```
 
