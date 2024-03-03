@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 将当前目录的内容复制到工作目录中
 COPY environment.yml /app/environment.yml
-COPY hsbot-refac.py /app/hsbot-refac.py
+COPY hsbot-refac.py /app/hsbot_refac.py
 
 # 使用conda安装Python 3.7
 RUN conda install python=3.8
@@ -24,4 +24,4 @@ RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple bs4 cloudscraper req
 RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple amiyabot
 
 # 设置启动命令
-CMD ["python", "./hsbot-refac.py"]
+CMD ["python", "./hsbot_refac.py"]

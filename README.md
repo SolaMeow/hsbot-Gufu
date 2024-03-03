@@ -64,7 +64,7 @@ Gufu-hsbot是基于 [AmiyaBot](https://www.amiyabot.com/) 框架的 QQ 聊天机
 
 conda activate hsbot
 
-python3 hsbot-refac.py
+python3 hsbot_refac.py
 
 ```
 
