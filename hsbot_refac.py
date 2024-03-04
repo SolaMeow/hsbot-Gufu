@@ -470,4 +470,8 @@ async def reqRankEleven(data: Message):
     
     return Chain(data).text(f'快捷查询只能查狂野，其他服务器需要使用教程中的命令, \n{res}')
 
-asyncio.run(bot.start())
+def start_bot():
+    asyncio.run(bot.start())
+
+if __name__ == "__main__":
+    start_bot()

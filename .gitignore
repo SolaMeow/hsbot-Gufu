@@ -6,3 +6,4 @@ license.jwt
 requestTest.py
 bark.py
 log
+__pycache__

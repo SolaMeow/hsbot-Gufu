@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 将当前目录的内容复制到工作目录中
 COPY environment.yml /app/environment.yml
-COPY hsbot-refac.py /app/hsbot_refac.py
+COPY hsbot_refac.py /app/hsbot_refac.py
 
 # 使用conda安装Python 3.7
 RUN conda install python=3.8
