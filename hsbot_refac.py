@@ -100,15 +100,18 @@ async def reqAPRankSTD(data: Message):
     return await reqRank(data, 'AP', 'STD', "查亚服标准")
 
 async def fetch_page(session, url):
-    async with session.get(url) as response:
-        info = await response.text()
-        json_dict = json.loads(info)
-        rank_name = json_dict["leaderboard"]["rows"]
-        page_results = []
-        for item in rank_name:
-            rank, name = item['rank'], item['accountid']
-            page_results.append((rank, name))
-        return page_results
+    try:
+        async with session.get(url) as response:
+            info = await response.text()
+            json_dict = json.loads(info)
+            rank_name = json_dict["leaderboard"]["rows"]
+            page_results = []
+            for item in rank_name:
+                rank, name = item['rank'], item['accountid']
+                page_results.append((rank, name))
+            return page_results
+    except (aiohttp.ClientError, json.JSONDecodeError, KeyError):
+        return None
 
 async def reqRankLev(data: Message, region: str, leaderboardId: str):
     all_results = []
@@ -119,6 +122,8 @@ async def reqRankLev(data: Message, region: str, leaderboardId: str):
             tasks.append(fetch_page(session, html))
         results = await asyncio.gather(*tasks)
         for page_results in results:
+            if page_results is None:
+                return Chain(data).text('获取数据时出现错误，网络波动将在下个版本修复，有问题反馈Sola')
             all_results.extend(page_results)
     
     # Sort all results by rank
@@ -128,6 +133,7 @@ async def reqRankLev(data: Message, region: str, leaderboardId: str):
     res = "\n".join(f"{rank}: {name}" for rank, name in all_results)
     
     return Chain(data).text(f'{region_dict[region]}服{leaderboard_dict[leaderboardId]}月榜, \n{res}')
+
 
 @bot.on_message(keywords='打印亚服狂野月榜')
 async def reqAPRankeleven(data: Message):
@@ -153,11 +159,15 @@ async def reqUSRankeleven(data: Message):
 async def reqUSRankeleven(data: Message):
     return await reqRankLev(data, 'AP', 'standard')
     
+
 async def fetch_num(session, url):
-    async with session.get(url) as response:
-        info = await response.text()
-        json_dict = json.loads(info)
-        return json_dict["leaderboard"]["pagination"]["totalSize"]
+    try:
+        async with session.get(url) as response:
+            info = await response.text()
+            json_dict = json.loads(info)
+            return json_dict["leaderboard"]["pagination"]["totalSize"]
+    except (aiohttp.ClientError, json.JSONDecodeError, KeyError):
+        return -1
 
 @bot.on_message(keywords='查三服狂野人数')
 async def reqNumLeaderBoard(data: Message):
@@ -169,8 +179,11 @@ async def reqNumLeaderBoard(data: Message):
     async with aiohttp.ClientSession() as session:
         tasks = [fetch_num(session, url) for url in urls]
         USWILD, EUWILD, APWILD = await asyncio.gather(*tasks)
-    res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD)
-    return Chain(data).text(f'三服狂野人数, \n{res_text}')
+    if -1 in (USWILD, EUWILD, APWILD):
+        return Chain(data).text('获取数据时出现错误，网络波动将在下个版本修复，有问题反馈Sola')
+    else:
+        res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD)
+        return Chain(data).text(f'三服狂野人数, \n{res_text}')
 
 @bot.on_message(keywords='查三服标准人数')
 async def reqNumLeaderBoard(data: Message):
@@ -182,8 +195,11 @@ async def reqNumLeaderBoard(data: Message):
     async with aiohttp.ClientSession() as session:
         tasks = [fetch_num(session, url) for url in urls]
         USWILD, EUWILD, APWILD = await asyncio.gather(*tasks)
-    res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD)
-    return Chain(data).text(f'三服标准人数, \n{res_text}')
+    if -1 in (USWILD, EUWILD, APWILD):
+        return Chain(data).text('获取数据时出现错误，网络波动将在下个版本修复，有问题反馈Sola')
+    else:
+        res_text = "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD)
+        return Chain(data).text(f'三服标准人数, \n{res_text}')
 
 
 async def reqRankArena(data: Message, region: str, leaderboardId: str, keyword: str):
@@ -443,11 +459,12 @@ async def reqNumLeaderBoard(data: Message):
     async with aiohttp.ClientSession() as session:
         tasks = [fetch_num(session, url) for url in urls]
         USWILD, EUWILD, APWILD = await asyncio.gather(*tasks)
-    
-    res_text = "快捷查询只能查狂野，标准需要使用教程中的命令。" + "\n"
-    res_text += "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD) 
-
-    return Chain(data).text(f'三服狂野人数, \n{res_text}')
+    if -1 in (USWILD, EUWILD, APWILD):
+        return Chain(data).text('获取数据时出现错误，网络波动将在下个版本修复，有问题反馈Sola')
+    else:
+        res_text = "快捷查询只能查狂野，标准需要使用教程中的命令。" + "\n"
+        res_text += "美服：" + str(USWILD) + "\n欧服：" + str(EUWILD) + "\n亚服：" + str(APWILD)
+        return Chain(data).text(f'三服狂野人数, \n{res_text}')
 
 
 @bot.on_message(keywords='月榜查询')
@@ -460,6 +477,8 @@ async def reqRankEleven(data: Message):
             tasks.append(fetch_page(session, html))
         results = await asyncio.gather(*tasks)
         for page_results in results:
+            if page_results is None:
+                return Chain(data).text('获取数据时出现错误')
             all_results.extend(page_results)
     
     # Sort all results by rank
