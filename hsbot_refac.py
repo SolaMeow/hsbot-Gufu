@@ -111,7 +111,22 @@ async def fetch_page(session, url):
                 page_results.append((rank, name))
             return page_results
     except (aiohttp.ClientError, json.JSONDecodeError, KeyError):
-        return None
+        try:
+            scraper = cloudscraper.create_scraper(browser={
+                'browser': 'firefox',
+                'platform': 'windows',
+                'mobile': True
+            })
+            info = scraper.get(url)
+            json_dict = json.loads(info.text)
+            rank_name = json_dict["leaderboard"]["rows"]
+            page_results = []
+            for item in rank_name:
+                rank, name = item['rank'], item['accountid']
+                page_results.append((rank, name))
+            return page_results
+        except Exception:
+            return None
 
 async def reqRankLev(data: Message, region: str, leaderboardId: str):
     all_results = []
@@ -167,7 +182,17 @@ async def fetch_num(session, url):
             json_dict = json.loads(info)
             return json_dict["leaderboard"]["pagination"]["totalSize"]
     except (aiohttp.ClientError, json.JSONDecodeError, KeyError):
-        return -1
+        try:
+            scraper = cloudscraper.create_scraper(browser={
+                'browser': 'firefox',
+                'platform': 'windows',
+                'mobile': True
+            })
+            info = scraper.get(url)
+            json_dict = json.loads(info.text)
+            return json_dict["leaderboard"]["pagination"]["totalSize"]
+        except Exception:
+            return -1
 
 @bot.on_message(keywords='查三服狂野人数')
 async def reqNumLeaderBoard(data: Message):

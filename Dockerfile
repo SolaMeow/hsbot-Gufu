@@ -10,5 +10,8 @@ COPY hsbot_refac.py /app/hsbot_refac.py
 # 安装依赖
 RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple bs4 cloudscraper requests amiyabot
 
+# 设置时区
+ENV TZ=Asia/Shanghai
+
 # 设置启动命令
 CMD ["python", "./hsbot_refac.py"]
